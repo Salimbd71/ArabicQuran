@@ -1,0 +1,50 @@
+name: Auto Unzip → ArabicQuran folder (Safe)
+
+on:
+  push:
+    paths:
+      - '**/*.zip'
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ডিস্ক স্পেস ফাঁকা (তোমার ২ জিবি zip এর জন্য যথেষ্ট)
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc "/usr/local/share/boost" "$AGENT_TOOLSDIRECTORY" || true
+
+      # ArabicQuran ফোল্ডার তৈরি করা
+      - name: Create ArabicQuran folder
+        run: mkdir -p ArabicQuran
+
+      # শুধু ArabicQuran ফোল্ডারে unzip করা (অন্য কিছু টাচ করবে না)
+      - name: Unzip all .zip files into ArabicQuran folder
+        run: |
+          find . -name "*.zip" -type f -exec unzip -o {} -d ArabicQuran \;
+
+      # অরিজিনাল zip ফাইলগুলো মুছে ফেলা
+      - name: Delete original zip files
+        run: |
+          find . -name "*.zip" -type f -delete
+
+      # শুধু পরিবর্তিত ফাইলগুলো কমিট করা
+      - name: Commit & Push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git add ArabicQuran          # শুধু এই ফোল্ডারটা অ্যাড করা
+          git add -A -- ':!*.zip'      # zip ফাইল বাদ দিয়ে বাকি সব (যদি কিছু থাকে)
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto unzip → ArabicQuran ($(date '+%Y-%m-%d %H:%M'))"
+            git push
+          fi
