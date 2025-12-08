@@ -14,7 +14,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ডিস্ক স্পেস ফাঁকা (তোমার ২ জিবি zip এর জন্য যথেষ্ট)
+      # ডিস্ক   স্পেস ফাঁকা (তোমার ২ জিবি zip এর জন্য যথেষ্ট)
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc "/usr/local/share/boost" "$AGENT_TOOLSDIRECTORY" || true
