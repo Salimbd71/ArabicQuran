@@ -1,4 +1,4 @@
-name: Unzip to ArabicQuran
+name: Unzip Quran to Root (101–114)
 
 on:
   push:
@@ -12,26 +12,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install unzip (just in case)
-        run: sudo apt-get update && sudo apt-get install -y unzip
-
-      - name: Create folder
-        run: mkdir -p ArabicQuran
-
-      - name: Find and unzip (failsafe)
+      - name: Extract 101–114 folders directly to repository root
         run: |
           find . -name "*.zip" -type f | while read zipfile; do
             echo "Extracting: $zipfile"
-            unzip -o "$zipfile" -d ArabicQuran || echo "This zip had issue, skipping..."
+            temp_dir=$(mktemp -d)
+            unzip -o "$zipfile" -d "$temp_dir"
+
+            # শুধু 101 থেকে 114 ফোল্ডারগুলো রুটে কপি করো
+            for folder in {101..114}; do
+              if [ -d "$temp_dir/$folder" ]; then
+                echo "Moving surah $folder to root..."
+                rsync -a "$temp_dir/$folder/" "./$folder/"
+                rm -rf "$temp_dir/$folder"
+              fi
+            done
+
+            # যদি কোনো কারণে ফোল্ডার না মিলে, তাহলে পুরোটা রুটে দিয়ে দাও
+            if [ -n "$(ls -A "$temp_dir" 2>/dev/null)" ]; then
+              echo "Copying remaining files to root..."
+              rsync -a "$temp_dir"/ ./
+            fi
+
+            rm -rf "$temp_dir"
           done
 
-      - name: Remove zip files
-        run: find . -name "*.zip" -type f -delete
+          echo "Final structure in root:"
+          ls -la | grep -E '^(101|102|103|104|105|106|107|108|109|110|111|112|113|114)' | head -10
 
-      - name: Commit changes
+      - name: Remove all zip files
+        run: find . -name "*.zip" -delete
+
+      - name: Commit & Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@users.noreply.github.com"
-          git add ArabicQuran
-          git commit -m "Unzipped files → ArabicQuran" || echo "Nothing to commit"
-          git push || echo "Push failed (maybe no changes)"
+          git add .
+          git commit -m "Unzipped 101–114 surahs to repository root" || echo "Nothing to commit"
+          git push || echo "Nothing to push"
