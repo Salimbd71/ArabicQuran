@@ -1,4 +1,4 @@
-name: Unzip Quran to Root (101–114)
+name: Unzip Quran to Root (Universal)
 
 on:
   push:
@@ -12,35 +12,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract 101–114 folders directly to repository root
+      - name: Extract everything from zip to root
         run: |
           find . -name "*.zip" -type f | while read zipfile; do
             echo "Extracting: $zipfile"
-            temp_dir=$(mktemp -d)
-            unzip -o "$zipfile" -d "$temp_dir"
-
-            # শুধু 101 থেকে 114 ফোল্ডারগুলো রুটে কপি করো
-            for folder in {101..114}; do
-              if [ -d "$temp_dir/$folder" ]; then
-                echo "Moving surah $folder to root..."
-                rsync -a "$temp_dir/$folder/" "./$folder/"
-                rm -rf "$temp_dir/$folder"
-              fi
-            done
-
-            # যদি কোনো কারণে ফোল্ডার না মিলে, তাহলে পুরোটা রুটে দিয়ে দাও
-            if [ -n "$(ls -A "$temp_dir" 2>/dev/null)" ]; then
-              echo "Copying remaining files to root..."
-              rsync -a "$temp_dir"/ ./
-            fi
-
-            rm -rf "$temp_dir"
+            unzip -o "$zipfile" -d .
+            echo "Extracted directly to root"
           done
 
-          echo "Final structure in root:"
-          ls -la | grep -E '^(101|102|103|104|105|106|107|108|109|110|111|112|113|114)' | head -10
+          echo "Current root contents after unzip:"
+          ls -la
 
-      - name: Remove all zip files
+      - name: Delete all zip files
         run: find . -name "*.zip" -delete
 
       - name: Commit & Push
@@ -48,5 +31,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions@users.noreply.github.com"
           git add .
-          git commit -m "Unzipped 101–114 surahs to repository root" || echo "Nothing to commit"
+          git status
+          git commit -m "Unzipped all surah folders to root" || echo "Nothing new"
           git push || echo "Nothing to push"
