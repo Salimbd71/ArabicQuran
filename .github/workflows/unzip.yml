@@ -1,25 +1,24 @@
 name: Unzip myfiles.zip
 
 on:
-  workflow_dispatch:  # ম্যানুয়ালি চালানোর জন্য
+  workflow_dispatch:
 
 jobs:
   unzip-root:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Unzip myfiles.zip
-      - name: Unzip ZIP file
+      - name: Install unzip
+        run: sudo apt-get update && sudo apt-get install unzip -y
+
+      - name: Unzip myfiles.zip
         run: |
           unzip myfiles.zip -d .
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add .
-          git commit -m "Unzip myfiles.zip to repo root" || echo "No changes to commit"
-          git push
+          git diff --exit-code || (git add . && git commit -m "Unzip myfiles.zip to repo root" && git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
