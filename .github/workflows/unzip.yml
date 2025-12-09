@@ -1,10 +1,10 @@
-name: Unzip ZIP to Repo
+name: Unzip myfiles.zip
 
 on:
   workflow_dispatch:  # ম্যানুয়ালি চালানোর জন্য
 
 jobs:
-  unzip-and-push:
+  unzip-root:
     runs-on: ubuntu-latest
 
     steps:
@@ -12,23 +12,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ যদি ZIP ফাইল রিপোতে থাকে
-      - name: Unzip local ZIP
+      # 2️⃣ Unzip myfiles.zip
+      - name: Unzip ZIP file
         run: |
-          unzip assets/myfiles.zip -d .
+          unzip myfiles.zip -d .
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
-          git commit -m "Unzip files to repo root"
+          git commit -m "Unzip myfiles.zip to repo root" || echo "No changes to commit"
           git push
-
-      # 2️⃣ যদি ZIP ফাইল URL থেকে ডাউনলোড করতে হয়
-      # - name: Download & Unzip
-      #   run: |
-      #     curl -L -o myfiles.zip https://example.com/myfiles.zip
-      #     unzip myfiles.zip -d .
-      #     git config user.name "github-actions"
-      #     git config user.email "github-actions@github.com"
-      #     git add .
-      #     git commit -m "Unzip files to repo root"
-      #     git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
