@@ -1,36 +1,34 @@
-name: Unzip Quran to Root (Universal)
+name: Unzip ZIP to Repo
 
 on:
-  push:
-    paths:
-      - '**/*.zip'
+  workflow_dispatch:  # ম্যানুয়ালি চালানোর জন্য
 
 jobs:
-  unzip:
+  unzip-and-push:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Extract everything from zip to root
+      # 2️⃣ যদি ZIP ফাইল রিপোতে থাকে
+      - name: Unzip local ZIP
         run: |
-          find . -name "*.zip" -type f | while read zipfile; do
-            echo "Extracting: $zipfile"
-            unzip -o "$zipfile" -d .
-            echo "Extracted directly to root"
-          done
-
-          echo "Current root contents after unzip:"
-          ls -la
-
-      - name: Delete all zip files
-        run: find . -name "*.zip" -delete
-
-      - name: Commit & Push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions@users.noreply.github.com"
+          unzip assets/myfiles.zip -d .
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
           git add .
-          git status
-          git commit -m "Unzipped all surah folders to root" || echo "Nothing new"
-          git push || echo "Nothing to push"
+          git commit -m "Unzip files to repo root"
+          git push
+
+      # 2️⃣ যদি ZIP ফাইল URL থেকে ডাউনলোড করতে হয়
+      # - name: Download & Unzip
+      #   run: |
+      #     curl -L -o myfiles.zip https://example.com/myfiles.zip
+      #     unzip myfiles.zip -d .
+      #     git config user.name "github-actions"
+      #     git config user.email "github-actions@github.com"
+      #     git add .
+      #     git commit -m "Unzip files to repo root"
+      #     git push
