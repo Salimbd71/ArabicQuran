@@ -19,7 +19,7 @@ jobs:
     - name: Download ZIP from everyayah
       run: |
         mkdir temp
-        curl -L "https://everyayah.com/data/Alafasy_128kbps/000_versebyverse.zip" -o temp/audio.zip
+        curl -L "https://everyayah.com/data/Alafasy_64kbps/000_versebyverse.zip" -o temp/audio.zip
 
     # 3️⃣ Unzip
     - name: Unzip audio files
